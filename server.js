@@ -53,6 +53,41 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// HAWKER BIG BUTTON
+// When a hawker taps "I'm Here", this fires a missed call to all subscribers
+app.get('/hawker-ping', (req, res) => {
+  const category = req.query.category?.toUpperCase();
+  const hawkerName = req.query.name || 'Your hawker';
+
+  if (!category) {
+    return res.json({ success: false, message: 'No category provided' });
+  }
+
+  // Find all subscribers for this category
+  const targets = subscribers.filter(s => s.category === category);
+
+  if (targets.length === 0) {
+    return res.json({ 
+      success: false, 
+      message: `No subscribers found for ${category}` 
+    });
+  }
+
+  // For now we simulate the missed call — real calls come next session
+  console.log(`🔔 ${hawkerName} is nearby selling ${category}!`);
+  console.log(`Firing missed calls to ${targets.length} subscribers:`);
+  targets.forEach(sub => {
+    console.log(`  📞 Calling ${sub.phone}...`);
+  });
+
+  res.json({
+    success: true,
+    message: `Pinged ${targets.length} subscribers for ${category}`,
+    subscribers_alerted: targets.length,
+    hawker: hawkerName,
+    category: category
+  });
+});
 app.listen(PORT, () => {
   console.log(`HawkerPing server running on port ${PORT}`);
 });
